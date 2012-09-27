@@ -31,6 +31,7 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 - (void)setCalloutCellsWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation;
 - (void)copyAccessoryTappedBlockToCalloutCells;
 
+@property (nonatomic,assign) CGFloat pinX;
 @property (nonatomic,assign) CGFloat contentHeight;
 @property (nonatomic,assign) CGPoint offsetFromParent;
 @property (nonatomic,readonly) CGFloat yShadowOffset;
@@ -67,6 +68,7 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 @synthesize yShadowOffset = _yShadowOffset;
 @synthesize offsetFromParent = _offsetFromParent;
 @synthesize contentHeight = _contentHeight;
+@synthesize pinX =_pinX;
 
 + (MultiRowCalloutAnnotationView *)calloutWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation onCalloutAccessoryTapped:(MultiRowAccessoryTappedBlock)block {
     return [[[MultiRowCalloutAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:MultiRowCalloutReuseIdentifier onCalloutAccessoryTapped:block] autorelease];
@@ -119,6 +121,7 @@ CGFloat const kMultiRowCalloutCellGap = 3;
     [self prepareOffset];
     [self prepareContentFrame];
     [self setNeedsDisplay];
+    self.layer.zPosition = 1; //IOS6 fix
 }
 
 - (void)setTitleWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation {
@@ -293,6 +296,8 @@ CGFloat const kMultiRowCalloutCellGap = 3;
         xPixelShift = (self.frame.size.width - 38) - [self relativeParentXPosition];
     }
     
+    self.pinX = [self relativeParentXPosition] + xPixelShift;
+    
         //Latitude
     CGPoint mapViewOriginRelativeToParent = [self.mapView convertPoint:self.mapView.frame.origin toView:self.parentAnnotationView];
     CGFloat yPixelShift = 0;
@@ -382,7 +387,6 @@ CGFloat const kMultiRowCalloutCellGap = 3;
     UIColor *color;
     CGColorSpaceRef space = CGColorSpaceCreateDeviceRGB();
     CGContextRef context = UIGraphicsGetCurrentContext();
-    CGFloat parentX = [self relativeParentXPosition];
         //Determine Size
     rect = self.bounds;
     rect.size.width -= stroke + 14;
@@ -394,9 +398,9 @@ CGFloat const kMultiRowCalloutCellGap = 3;
     CGPathMoveToPoint(path, NULL, rect.origin.x, rect.origin.y + radius);
     CGPathAddLineToPoint(path, NULL, rect.origin.x, rect.origin.y + rect.size.height - radius);
     CGPathAddArc(path, NULL, rect.origin.x + radius, rect.origin.y + rect.size.height - radius, radius, M_PI, M_PI / 2, 1);
-    CGPathAddLineToPoint(path, NULL, parentX - 15, rect.origin.y + rect.size.height);
-    CGPathAddLineToPoint(path, NULL, parentX, rect.origin.y + rect.size.height + 15);
-    CGPathAddLineToPoint(path, NULL, parentX + 15, rect.origin.y + rect.size.height);
+    CGPathAddLineToPoint(path, NULL, self.pinX - 15, rect.origin.y + rect.size.height);
+    CGPathAddLineToPoint(path, NULL, self.pinX, rect.origin.y + rect.size.height + 15);
+    CGPathAddLineToPoint(path, NULL, self.pinX + 15, rect.origin.y + rect.size.height);
     CGPathAddLineToPoint(path, NULL, rect.origin.x + rect.size.width - radius, rect.origin.y + rect.size.height);
     CGPathAddArc(path, NULL, rect.origin.x + rect.size.width - radius, rect.origin.y + rect.size.height - radius, radius, M_PI / 2, 0.0f, 1);
     CGPathAddLineToPoint(path, NULL, rect.origin.x + rect.size.width, rect.origin.y + radius);

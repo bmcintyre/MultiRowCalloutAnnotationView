@@ -83,6 +83,13 @@
     id<MKAnnotation> annotation = aView.annotation;
     if (!annotation || ![aView isSelected])
         return;
+    self.selectedAnnotationView = aView;
+    
+    //added this to overcome the issue in 4.3 where once a pin is selected and displayed
+    //any further pins will not show
+    [mapView deselectAnnotation:annotation animated:NO];
+    [[aView superview] bringSubviewToFront:aView];
+    
     if ( NO == [annotation isKindOfClass:[MultiRowCalloutCell class]] &&
         [annotation conformsToProtocol:@protocol(MultiRowAnnotationProtocol)] )
     {
@@ -92,11 +99,9 @@
             [_calloutAnnotation copyAttributesFromAnnotation:pinAnnotation];
             [mapView addAnnotation:_calloutAnnotation];
         }
-        self.selectedAnnotationView = aView;
         return;
     }
     [mapView setCenterCoordinate:annotation.coordinate animated:YES];
-    self.selectedAnnotationView = aView;
 }
 
 - (void)mapView:(MKMapView *)mapView didDeselectAnnotationView:(MKAnnotationView *)aView {
