@@ -1,5 +1,4 @@
-MultiRowCalloutAnnotationView - Exactly what it says, for MapKit / iOS 
-Compatability changes for iOS6
+MultiRowCalloutAnnotationView - Exactly what it says, for MapKit / iOS. Compatability changes for iOS6
 =============
 Created by Gregory S. Combs.  
 Based on work at [GitHub](https://github.com/grgcombs/MultiRowCalloutAnnotationView).
