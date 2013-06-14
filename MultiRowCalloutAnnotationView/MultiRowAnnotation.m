@@ -18,7 +18,7 @@
 @synthesize calloutCells = _calloutCells;
 
 + (MultiRowAnnotation *)annotationWithCoordinate:(CLLocationCoordinate2D)coordinate title:(NSString *)title calloutCells:(NSArray *)calloutCells {
-    return [[[MultiRowAnnotation alloc] initWithCoordinate:coordinate title:title calloutCells:calloutCells] autorelease];
+    return [[MultiRowAnnotation alloc] initWithCoordinate:coordinate title:title calloutCells:calloutCells];
 }
 
 - (id)initWithCoordinate:(CLLocationCoordinate2D)coordinate title:(NSString *)title calloutCells:(NSArray *)calloutCells {
@@ -31,13 +31,8 @@
     return self;
 }
 
-- (void)dealloc {
-    self.title = nil;
-    self.calloutCells = nil;
-    [super dealloc];
-}
 
-    // For selection/deselection of the callout in the map view controller, we need to make a copy of the annotation
+// For selection/deselection of the callout in the map view controller, we need to make a copy of the annotation
 - (id)copyWithZone:(NSZone *)zone {
     MultiRowAnnotation *objectCopy = [[MultiRowAnnotation allocWithZone:zone] initWithCoordinate:_coordinate title:_title calloutCells:_calloutCells];
     return objectCopy;

@@ -25,7 +25,7 @@ CGSize const kMultiRowCalloutCellSize = {245,44};
 @synthesize onCalloutAccessoryTapped = _onCalloutAccessoryTapped;
 
 + (MultiRowCalloutCell *)cellWithImage:(UIImage *)image title:(NSString *)title subtitle:(NSString *)subtitle userData:(NSDictionary *)userData onCalloutAccessoryTapped:(MultiRowAccessoryTappedBlock)block {
-    return [[[MultiRowCalloutCell alloc] initWithImage:image title:title subtitle:subtitle userData:userData onCalloutAccessoryTapped:block] autorelease];
+    return [[MultiRowCalloutCell alloc] initWithImage:image title:title subtitle:subtitle userData:userData onCalloutAccessoryTapped:block];
 }
 
 + (MultiRowCalloutCell *)cellWithImage:(UIImage *)image title:(NSString *)title subtitle:(NSString *)subtitle userData:(NSDictionary *)userData {
@@ -65,11 +65,6 @@ CGSize const kMultiRowCalloutCellSize = {245,44};
     return self;
 }
 
-- (void)dealloc {
-    Block_release(_onCalloutAccessoryTapped);
-    self.userData = nil;
-    [super dealloc];
-}
 
 - (IBAction)calloutAccessoryTapped:(id)sender {
     if (self.onCalloutAccessoryTapped)
@@ -78,14 +73,11 @@ CGSize const kMultiRowCalloutCellSize = {245,44};
 
 #pragma mark - Block setters
 
-// NOTE: Sometimes see crashes when relying on just the copy property. Using Block_copy ensures correct behavior
-
 - (void)setOnCalloutAccessoryTapped:(MultiRowAccessoryTappedBlock)onCalloutAccessoryTapped {
     if (_onCalloutAccessoryTapped) {
-        Block_release(_onCalloutAccessoryTapped);
         _onCalloutAccessoryTapped = nil;
     }
-    _onCalloutAccessoryTapped = Block_copy(onCalloutAccessoryTapped);
+    _onCalloutAccessoryTapped = onCalloutAccessoryTapped;
 }
 
 #pragma mark - Convenience Accessors

@@ -24,7 +24,7 @@ NSString* const MultiRowCalloutReuseIdentifier = @"MultiRowCalloutReuse";
 CGFloat const kMultiRowCalloutCellGap = 3;
 
 @interface MultiRowCalloutAnnotationView()
-@property (nonatomic,retain) IBOutlet UILabel *titleLabel;
+@property (nonatomic,strong) IBOutlet UILabel *titleLabel;
 @property (nonatomic,assign) CGFloat cellInsetX;
 @property (nonatomic,assign) CGFloat cellOffsetY;
 - (void)setTitleWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation;
@@ -35,7 +35,7 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 @property (nonatomic,assign) CGFloat contentHeight;
 @property (nonatomic,assign) CGPoint offsetFromParent;
 @property (nonatomic,readonly) CGFloat yShadowOffset;
-@property (nonatomic,retain) UIView *contentView;
+@property (nonatomic,strong) UIView *contentView;
 - (void)prepareContentFrame;
 - (void)prepareFrameSize;
 - (void)prepareOffset;
@@ -71,7 +71,7 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 @synthesize pinX =_pinX;
 
 + (MultiRowCalloutAnnotationView *)calloutWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation onCalloutAccessoryTapped:(MultiRowAccessoryTappedBlock)block {
-    return [[[MultiRowCalloutAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:MultiRowCalloutReuseIdentifier onCalloutAccessoryTapped:block] autorelease];
+    return [[MultiRowCalloutAnnotationView alloc] initWithAnnotation:annotation reuseIdentifier:MultiRowCalloutReuseIdentifier onCalloutAccessoryTapped:block];
 }
 
 - (id)initWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation reuseIdentifier:(NSString *)reuseIdentifier onCalloutAccessoryTapped:(MultiRowAccessoryTappedBlock)block {
@@ -94,19 +94,6 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 - (id)initWithAnnotation:(id<MultiRowAnnotationProtocol>)annotation reuseIdentifier:(NSString *)reuseIdentifier {
     self = [self initWithAnnotation:annotation reuseIdentifier:reuseIdentifier onCalloutAccessoryTapped:nil];
     return self;
-}
-
-- (void)dealloc {
-    self.calloutCells = nil;
-    self.titleLabel = nil;
-    Block_release(_onCalloutAccessoryTapped);
-    self.parentAnnotationView = nil;
-    self.mapView = nil;
-    if (_contentView) {
-        [_contentView release];
-        _contentView = nil;
-    }
-    [super dealloc];
 }
 
 #pragma mark - Setters and Accessors
@@ -153,10 +140,7 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 }
 
 - (void)setCalloutCells:(NSArray *)calloutCells {
-    if (_calloutCells) {
-        [_calloutCells release];
-    }
-    _calloutCells = [calloutCells retain];
+    _calloutCells = calloutCells;
     if (calloutCells) {
         self.contentHeight = _cellOffsetY + ([calloutCells count] * (kMultiRowCalloutCellSize.height + kMultiRowCalloutCellGap));
         for (MultiRowCalloutCell *cell in calloutCells)
@@ -168,20 +152,18 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 
 #pragma mark - Block setters
 
-    // NOTE: Sometimes see crashes when relying on just the copy property. Using Block_copy ensures correct behavior
-
 - (void)setOnCalloutAccessoryTapped:(MultiRowAccessoryTappedBlock)onCalloutAccessoryTapped {
     if (_onCalloutAccessoryTapped) {
-        Block_release(_onCalloutAccessoryTapped);
         _onCalloutAccessoryTapped = nil;
     }
-    _onCalloutAccessoryTapped = Block_copy(onCalloutAccessoryTapped);
+    _onCalloutAccessoryTapped = onCalloutAccessoryTapped;
     [self copyAccessoryTappedBlockToCalloutCells];
 }
 
 - (void)copyAccessoryTappedBlockToCalloutCells {
     if (!self.onCalloutAccessoryTapped)
         return;
+
     for (MultiRowCalloutCell *cell in _calloutCells)
         if (!cell.onCalloutAccessoryTapped)
             cell.onCalloutAccessoryTapped = _onCalloutAccessoryTapped;
@@ -207,29 +189,29 @@ CGFloat const kMultiRowCalloutCellGap = 3;
 
 #pragma mark - Selection/Deselection
 
-#define GRGRunBlockAfterDelay(block,delay) dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC*delay), dispatch_get_current_queue(), block);
+#define GRGRunBlockAfterDelay(block,delay) dispatch_after(dispatch_time(DISPATCH_TIME_NOW, NSEC_PER_SEC*delay), dispatch_get_main_queue(), block);
 
-- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
-    UIView *hitView = [super hitTest:point withEvent:event];
-    //If the accessory is hit, the map view may want to select an annotation sitting below it, so we must disable the other annotations ... But not the parent because that will screw up the selection
-    if ([hitView isKindOfClass:[UIButton class]]) {
-        [self preventParentSelectionChange];
-        __block __typeof__(self) bself = self;
-        GRGRunBlockAfterDelay(^{
-            [bself allowParentSelectionChange];
-        },.8);
-        for (UIView *aView in self.superview.subviews) {
-            if ([aView isKindOfClass:[MKAnnotationView class]] && aView != self.parentAnnotationView) {
-                MKAnnotationView *sibling = (MKAnnotationView *)aView;
-                sibling.enabled = NO;
-                GRGRunBlockAfterDelay(^{
-                    sibling.enabled = YES;
-                },.8);
-            }
-        }
-    }
-    return hitView;
-}
+//- (UIView *)hitTest:(CGPoint)point withEvent:(UIEvent *)event {
+//    UIView *hitView = [super hitTest:point withEvent:event];
+//    //If the accessory is hit, the map view may want to select an annotation sitting below it, so we must disable the other annotations ... But not the parent because that will screw up the selection
+//    if ([hitView isKindOfClass:[UIButton class]]) {
+//        [self preventParentSelectionChange];
+//        __block __typeof__(self) bself = self;
+//        GRGRunBlockAfterDelay(^{
+//            [bself allowParentSelectionChange];
+//        },.8);
+//        for (UIView *aView in self.superview.subviews) {
+//            if ([aView isKindOfClass:[MKAnnotationView class]] && aView != self.parentAnnotationView) {
+//                MKAnnotationView *sibling = (MKAnnotationView *)aView;
+//                sibling.enabled = NO;
+//                GRGRunBlockAfterDelay(^{
+//                    sibling.enabled = YES;
+//                },.8);
+//            }
+//        }
+//    }
+//    return hitView;
+//}
 
 - (void)preventParentSelectionChange {
     if (self.parentAnnotationView && [self.parentAnnotationView respondsToSelector:@selector(setPreventSelectionChange:)]) {

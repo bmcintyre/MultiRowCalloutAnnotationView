@@ -17,8 +17,8 @@
 #import "MultiRowAnnotation.h"
 
 @interface ViewController()
-@property (nonatomic, retain) MKAnnotationView *selectedAnnotationView;
-@property (nonatomic,retain) MultiRowAnnotation *calloutAnnotation;
+@property (nonatomic, strong) MKAnnotationView *selectedAnnotationView;
+@property (nonatomic,strong) MultiRowAnnotation *calloutAnnotation;
 @end
 
 @implementation ViewController
@@ -26,12 +26,6 @@
 @synthesize calloutAnnotation = _calloutAnnotation;
 @synthesize selectedAnnotationView = _selectedAnnotationView;
 
-- (void)dealloc {
-    self.mapView = nil;
-    self.selectedAnnotationView = nil;
-    self.calloutAnnotation = nil;
-    [super dealloc];
-}
 
 - (void)viewDidUnload
 {
@@ -62,7 +56,7 @@
         if (!annotationView) {
             annotationView = [MultiRowCalloutAnnotationView calloutWithAnnotation:newAnnotation onCalloutAccessoryTapped:^(MultiRowCalloutCell *cell, UIControl *control, NSDictionary *userData) {
                 // This is where I usually push in a new detail view onto the navigation controller stack, using the object's ID
-                NSLog(@"Representative (%@) with ID '%@' was tapped.", cell.subtitle, [userData objectForKey:@"id"]);
+                NSLog(@"Representative (%@) with ID '%@' was tapped.", cell.subtitle, userData[@"id"]);
             }];
         }
         else
@@ -80,14 +74,17 @@
 }
 
 - (void)mapView:(MKMapView *)mapView didSelectAnnotationView:(MKAnnotationView *)aView {
-    id<MKAnnotation> annotation = aView.annotation;
-    if (!annotation || ![aView isSelected])
+    
+	id<MKAnnotation> annotation = aView.annotation;
+    
+	if (!annotation || ![aView isSelected])
         return;
+	
     self.selectedAnnotationView = aView;
     
     //added this to overcome the issue in 4.3 where once a pin is selected and displayed
     //any further pins will not show
-    [mapView deselectAnnotation:annotation animated:NO];
+    //[mapView deselectAnnotation:annotation animated:NO];
     [[aView superview] bringSubviewToFront:aView];
     
     if ( NO == [annotation isKindOfClass:[MultiRowCalloutCell class]] &&

@@ -28,13 +28,13 @@
 + (District *)demoAnnotationFactory {
     Representative *dudeOne = [Representative representativeWithName:@"Rep. Dude" party:@"Republican" image:[UIImage imageNamed:@"redstar"] representativeID:@"TXL1"];
     Representative *dudeTwo = [Representative representativeWithName:@"Rep. Guy" party:@"Democrat" image:[UIImage imageNamed:@"bluestar"] representativeID:@"TXL2"];
-    return [District districtWithCoordinate:CLLocationCoordinate2DMake(30.274722, -97.740556) title:@"Austin Representatives" representatives:[NSArray arrayWithObjects:dudeOne, dudeTwo, nil]];    
+    return [District districtWithCoordinate:CLLocationCoordinate2DMake(30.274722, -97.740556) title:@"Austin Representatives" representatives:@[dudeOne, dudeTwo]];    
 }
 
 #pragma mark - The Good Stuff
 
 + (District *)districtWithCoordinate:(CLLocationCoordinate2D)coordinate title:(NSString *)title representatives:(NSArray *)representatives {
-    return [[[District alloc] initWithCoordinate:coordinate title:title representatives:representatives] autorelease];
+    return [[District alloc] initWithCoordinate:coordinate title:title representatives:representatives];
 }
 
 - (id)initWithCoordinate:(CLLocationCoordinate2D)coordinate title:(NSString *)title representatives:(NSArray *)representatives {
@@ -47,11 +47,6 @@
     return self;
 }
 
-- (void)dealloc {
-    self.title = nil;
-    self.representatives = nil;
-    [super dealloc];
-}
 
 - (NSArray *)calloutCells {
     if (!_representatives || [_representatives count] == 0)
